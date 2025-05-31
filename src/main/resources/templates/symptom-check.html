@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symptom Checker - DoctorSab</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .go-back-btn:hover { color: #764ba2 !important; text-decoration: underline; }
+        .chat-container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 20px; box-shadow: 0 8px 32px rgba(102,126,234,0.13); padding: 36px 24px 28px 24px; }
+        .chat-header { margin-bottom: 18px; }
+        .chat-messages { min-height: 220px; max-height: 340px; overflow-y: auto; margin-bottom: 18px; padding: 16px 12px; background: linear-gradient(135deg, #f8f9fa 80%, #e9eefa 100%); border-radius: 14px; }
+        .chat-message { margin-bottom: 14px; display: flex; }
+        .chat-message.user { justify-content: flex-end; }
+        .chat-bubble { padding: 13px 20px; border-radius: 18px; max-width: 75%; font-size: 1.05rem; box-shadow: 0 2px 8px rgba(102,126,234,0.07); }
+        .chat-message.user .chat-bubble { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; border-bottom-right-radius: 6px; }
+        .chat-message.bot .chat-bubble { background: #e9eefa; color: #333; border-bottom-left-radius: 6px; }
+        .chat-input-row { display: flex; gap: 10px; margin-top: 10px; }
+        .chat-input { flex: 1; padding: 13px; border-radius: 10px; border: 2px solid #e0e0e0; font-size: 1.05rem; background: #f8f9fa; transition: border 0.2s; }
+        .chat-input:focus { border: 2px solid #667eea; outline: none; }
+        .chat-send-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; border: none; border-radius: 10px; padding: 0 28px; font-weight: 600; font-size: 1.05rem; cursor: pointer; transition: background 0.2s; }
+        .chat-send-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .chat-loading { color: #667eea; font-size: 1.01rem; margin: 10px 0; text-align: center; }
+        @media (max-width: 700px) { .chat-container { padding: 12px 2vw; } }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header" style="display: flex; align-items: center; justify-content: space-between;">
+            <button onclick="window.history.back()" class="go-back-btn" style="background: none; border: none; color: #667eea; font-size: 1.3rem; font-weight: 700; cursor: pointer; padding: 0 10px 0 0; display: flex; align-items: center; gap: 4px; transition: color 0.2s;">
+                <span style="font-size: 1.5rem;">&#8592;</span> <span style="font-size: 1rem;">Go Back</span>
+            </button>
+            <span style="flex:1; text-align:center; font-size:1.5rem; font-weight:700; color:#667eea;">AI Symptom Checker</span>
+            <span style="width: 80px;"></span>
+        </div>
+        <div class="chat-messages" id="chatMessages" style="margin-bottom: 22px;">
+            <div class="chat-message bot"><div class="chat-bubble">Hi! 👋 Please describe your symptoms and I'll help you check for possible conditions or diseases.</div></div>
+        </div>
+        <form class="chat-input-row" id="chatForm" autocomplete="off" style="margin-bottom: 0;">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Describe your symptom(s)..." required autofocus style="box-shadow: 0 2px 8px rgba(102,126,234,0.07);" />
+            <button type="submit" class="chat-send-btn" id="sendBtn" style="box-shadow: 0 2px 8px rgba(102,126,234,0.10);">Send</button>
+        </form>
+        <div class="chat-loading" id="chatLoading" style="display:none;">Analyzing your symptoms...</div>
+    </div>
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const chatForm = document.getElementById('chatForm');
+        const chatInput = document.getElementById('chatInput');
+        const chatLoading = document.getElementById('chatLoading');
+        const sendBtn = document.getElementById('sendBtn');
+
+        chatForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const userMsg = chatInput.value.trim();
+            if (!userMsg) return;
+            addMessage('user', userMsg);
+            chatInput.value = '';
+            chatLoading.style.display = 'block';
+            sendBtn.disabled = true;
+            // Simulate AI response (replace with real API call)
+            const botMsg = await getSymptomCheckResponse(userMsg);
+            addMessage('bot', botMsg);
+            chatLoading.style.display = 'none';
+            sendBtn.disabled = false;
+        });
+
+        function addMessage(sender, text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'chat-message ' + sender;
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-bubble';
+            bubble.textContent = text;
+            msgDiv.appendChild(bubble);
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function getSymptomCheckResponse(symptomText) {
+            
+            const apiUrl = '/api/llama2/symptom-check';
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt: symptomText })
+                });
+                if (!response.ok) {
+                    throw new Error('API error');
+                }
+                const data = await response.json();
+             
+                return data.reply || 'Sorry, I could not process your symptoms. Please try again.';
+            } catch (err) {
+                return 'Sorry, there was a problem connecting to the AI service.';
+            }
+        }
+    </script>
+</body>
+</html>
