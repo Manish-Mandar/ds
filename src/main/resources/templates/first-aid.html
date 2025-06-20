@@ -426,11 +426,10 @@
             msgDiv.appendChild(bubble);
             chatMessages.appendChild(msgDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
-        }async function getFirstAidResponse(firstAidText) {
-            // Direct connection to OpenRouter API using DeepSeek R1
+        }async function getFirstAidResponse(firstAidText) {            // Direct connection to OpenRouter API using DeepSeek R1
             const openRouterApiUrl = 'https://openrouter.ai/api/v1/chat/completions';
             // API key - should be handled securely in production!
-            const apiKey = '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';
+            const apiKey = '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';
             
             try {
                 console.log('Sending first aid request to DeepSeek R1:', firstAidText);
